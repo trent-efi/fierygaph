@@ -1,0 +1,111 @@
+<?php
+    if(!session_id()) { 
+        session_start(); 
+    }
+
+    if(!isset($_SESSION['data_arr'])) {
+        $_SESSION['data_arr'] = array();
+    }
+
+
+    include 'controller.php';
+
+    $id = $_GET["id"];
+    
+    if (empty($id)){
+        echo "EMPTY: VAR<br>";
+    } 
+    if (!is_numeric($id) ) {
+        echo "NOT NUMERIC<br>";
+    } 
+?>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+	<link rel="stylesheet" href="style.css">
+	<title>FieryPerfmon Graph Portal:</title>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script type="text/javascript" src="dist/jquery.jqplot.js"></script>
+        <script type="text/javascript" src="dist/plugins/jqplot.json2.js"></script>
+        <link rel="stylesheet" type="text/css" hrf="dist/jquery.jqplot.css" />
+    </head>
+    <body>
+        <table id="outer_table0">
+            <tr id="outer_table0_row0">
+                <td colspan="2"><h1>HEADER</h1></td>
+            </tr>
+            <tr id="outer_table0_row1">
+                <td id="left"><div id="list1"></div></td>
+	        <td id="right"><div id="chart1"></div></td>
+            </tr>
+            <tr id="outer_table0_row3">
+                <td colspan="2"><h1>footer<?php echo $id; ?></h1></td>
+            </tr>
+        </table>    
+    </body>
+    <script>
+    $(document).ready(function(){
+        // Our data renderer function, returns an array of the form:
+        // [[[x1, sin(x1)], [x2, sin(x2)], ...]]
+        var sineRenderer = function() {
+            var data = [[]];
+            for (var i=0; i<13; i+=0.5) {
+                data[0].push([i, Math.sin(i)]);
+            }
+            return data;
+        };
+ 
+        // we have an empty data array here, but use the "dataRenderer"
+        // option to tell the plot to get data from our renderer.
+        var plot1 = $.jqplot('chart1',[],{
+            title: 'Sine Data Renderer',
+            dataRenderer: sineRenderer
+        });
+
+	init_page (<?php echo $id; ?>);
+    });
+
+
+
+    function init_page (id) {
+        $.ajax({
+            url: 'controller.php',
+            method: 'POST',
+	    data:  {'function': 'init_page', 'id': id},
+	    success: function(str){
+	        //alert("RETURNED: "+str);
+	        $("#list1").html(str);
+	    }   
+        });
+    }
+
+    function row_selected(index) {
+        id_tag = "#row"+index;
+
+	//RESET the selected row colors and highlight the new one...
+	$(".row_select").css('background-color', 'white');
+        $(id_tag).css('background-color', 'red');
+
+        //alert("The row is: "+index);
+        $.ajax({
+            url: 'controller.php',
+            method: 'POST',
+	    data:  {'function': 'get_data_by_index', 'index': index},
+	    success: function(data){
+	        console.log("RETURNED: "+data);
+	        //$("#list1").html(str);
+		update_chart(data);
+	    }   
+        });
+    }
+
+    function update_chart(data){
+    
+    }
+
+    </script>
+</html>
+
+
+
