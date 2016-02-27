@@ -1,7 +1,6 @@
 <?php
-if(!session_id()) { 
     session_start(); 
-}
+
 
 $action = $_POST['function'];
 
@@ -72,24 +71,23 @@ function init_page($id, $oc, $dr){
     $page = 0;
     foreach($list_all as $all[0]){
         if($first != 0){
-	    $proc = substr($all[0][0], 2);//gets rid of first two '\' chars
-            $pos = strpos($proc, '\\');
-	    $proc = substr($proc, $pos);
-
-            $proc = preg_replace( '/[^[:print:]]/', '',$proc);
-            $line = "<tr class='row_select row_status' id='row".$index."' onclick='start_selected(".$index.")'><td id='name".$index."'>".$proc."</td></tr>";
-	    $list = $list.$line;
-            $data_arr[] = $all;
-	    $proc_arr[] = $proc;
-	    $index++;	
-
+	    if($all[0][1] != " ") {
+	        $proc = substr($all[0][0], 2);//gets rid of first two '\' chars
+                $pos = strpos($proc, '\\');
+	        $proc = substr($proc, $pos);
+                $proc = preg_replace( '/[^[:print:]]/', '',$proc);
+                $line = "<tr class='row_select row_status' id='row".$index."' onclick='start_selected(".$index.")'><td id='name".$index."'>".$proc."</td></tr>";
+	        $list = $list.$line;
+                $data_arr[] = $all;
+	        $proc_arr[] = $proc;
+	        $index++;	
+	    }
 	} else {
 	    $first = 1;
 	}
     }
     ///////////////////////////////////////////////////////////////////////////
     $_SESSION['data_arr'] = $data_arr;
-    $_SESSION['name_arr'] = $list_tol;
     $_SESSION['proc_arr'] = $proc_arr;
     $list = $list."</table><hr>";
 

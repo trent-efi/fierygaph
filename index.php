@@ -1,10 +1,10 @@
 <?php
-    session_start(); 
-    
 
-    if(!isset($_SESSION['data_arr'])) {
+    session_start(); 
+
+
+if(!isset($_SESSION['data_arr'])) {
         $_SESSION['data_arr'] = array();
-	$_SESSION['name_arr'] = array();
 	$_SESSION['proc_arr'] = array();
     }
 
@@ -48,17 +48,11 @@
         <script type="text/javascript" src="dist/plugins/jqplot.json2.js"></script>
         <link rel="stylesheet" type="text/css" href="dist/jquery.jqplot.css" />
 
-	<link href="/style/bootstrap.min.css" rel="stylesheet">
-        <link href="/style/highlight.css" rel="stylesheet">
-        <link href="/style/bootstrap-switch.css" rel="stylesheet">
-        <link href="http://getbootstrap.com/assets/css/docs.min.css" rel="stylesheet">
-        <link href="/style/main.css" rel="stylesheet">
 
-	<!--<script src="js/jquery.min.js"></script>-->
-        <!--<script src="js/bootstrap.min.js"></script>-->
-        <script src="js/bootstrap-switch.js"></script>
+        <link href="http://getbootstrap.com/assets/css/docs.min.css" rel="stylesheet">
+
     </head>
-    <body onunload="session_destroy()">
+    <body>
         <div class="header">
             <div class="header-inner"><div><img id="logo_link" onclick="goto_calculus()" src="/fieryperfmon/efi.logo"/></div></div>       
         </div>
@@ -94,7 +88,10 @@
 
     MAX_PAGE = 0;
     CUR_PAGE = 0;
-    ROW_SIZE = 25; 
+    ROW_SIZE = 30;
+
+    DATA_ARR = new Array();
+    PROC_ARR = new Array();
 
     $(document).ready(function(){
 
@@ -120,8 +117,12 @@
 		//This will 'CLICK' the newly generated table row from the return str
                 //This 'CLICK' will call start_selected() in javascript
 
+                DATA_ARR = <?php echo json_encode($_SESSION['data_arr']); ?>;
+                PROC_ARR = <?php echo json_encode($_SESSION['proc_arr']); ?>;
+		//console.log(DATA_ARR[1][0]);
 
-                var length = <?php echo count($_SESSION['proc_arr']);?>;
+
+                var length = PROC_ARR.length;
 		MAX_PAGE = Math.floor(length / ROW_SIZE);
 		if(MAX_PAGE <= 0) {
 		    MAX_PAGE = 1;
@@ -243,26 +244,30 @@
     }
 
     function get_data_by_index(index){
-        $.ajax({
+    
+        //console.log(DATA_ARR[index][0].toString());
+        update_chart(DATA_ARR[index][0], index);
+
+        /*$.ajax({
             url: 'controller.php',
             method: 'POST',
 	    data:  {'function': 'get_data_by_index', 'index': index},
 	    success: function(data){
 		update_chart(data, index);
 	    }   
-        });
+        });*/
+
     
     }
 
     function update_chart(data, index){
+        //console.log(parseInt(data[1]));
         var name = "#name"+index;
-	//var val = document.getElementById("name0").value; 
 	var proc_name = "<h2>"+$(name).html()+"</h2>"; 
 
-	var plot_str = data.split(",");
         var plot_num = [];
-        for(i = 0; i < plot_str.length; i++) {
-	    plot_num[i] = parseInt(plot_str[i]);
+        for(i = 1; i < data.length; i++) {
+	    plot_num[i] = parseInt(data[i]);
 	}
 
 	var options = {};        

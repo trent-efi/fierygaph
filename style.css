@@ -84,10 +84,12 @@ body {
     position: relative;
 }
 #next {
+    visibility: hidden;
     display: inline-block; 
     *display: inline;
 }
 #prev {
+    visibility: hidden;
     display: inline-block; 
     *display: inline;
 }
