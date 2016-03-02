@@ -29,6 +29,7 @@ $action_id = $id.".".$oc;
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="style.css">
 	<title>FieryPerfmon Graph Portal:</title>
 	<!-- The JQuery Library used on other JQplot projects... -->
@@ -90,8 +91,8 @@ $action_id = $id.".".$oc;
 		    <div id="box-wrap-left">
 		    </div>
 		    <div id="box-wrap-right">
-		        <div class="box-inner">Choose a CSV to upload:</div>
-			<div class="box-inner"><input type="file" id="files" name="files[]" multiple /></div>
+		        <div class="box-inner"><h2 id="file_select_text">Choose a CSV to upload:</h2></div>
+			<div class="box-inner" id="file_select"><input type="file" id="files" name="files[]" multiple /></div>
                         <!--<div class="box-inner"><button onclick="CSV_button_click()">Import CSV</button></div>-->
 		    </div>
 		</div>
@@ -102,7 +103,9 @@ $action_id = $id.".".$oc;
 
     MAX_PAGE = 0;
     CUR_PAGE = 0;
-    ROW_SIZE = 10;
+    ROW_SIZE = 20;
+
+    //alert( $( document ).height() );
 
     DATA_ARR = new Array();
 
@@ -152,23 +155,12 @@ $action_id = $id.".".$oc;
         DATA_ARR = [];
         var files = evt.target.files; // FileList object
         var file = files[0];
-
-        // read the file metadata
-        var output = ''
-            output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
-            output += ' - FileType: ' + (file.type || 'n/a') + '<br />\n';
-            output += ' - FileSize: ' + file.size + ' bytes<br />\n';
-            output += ' - LastModified: ' + (file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() : 'n/a') + '<br />\n';
-
-        // read the file contents
         printTable(file);
-        
-        // post the results
-        //$('#list').append(output);
+
     }
 
     function printTable(file) {
-        
+	$('#chart1').html('<center><img id="loading_img" src="loading.gif"/></center>');        
         var reader = new FileReader();
         reader.readAsText(file);
         reader.onload = function(event) {
@@ -200,6 +192,8 @@ $action_id = $id.".".$oc;
 	    html += '</table>';
 	    
 	    DATA_ARR = arr;
+
+	    $('#chart1').html('');
             $('#list1').html(html);
 
 	    handle_row_display(0);

@@ -10,6 +10,8 @@ body {
 * {
    margin: 0;
    padding: 0;
+   font-family: 'Roboto', sans-serif;
+    overflow: hidden;   
 }
 .header {
     position: relative; /* needed for stacking */
@@ -55,6 +57,7 @@ body {
     height: 6%;
 }
 .footer-box-wrapper {
+    text-align: center;
     position: relative;
 }
 .box-inner {
@@ -97,7 +100,7 @@ body {
     cursor: hand;    
 }
 #logo_link {
-    padding: 5px;
+    padding: 0px 0px 0px 15px;
     cursor: pointer; 
     cursor: hand;
 }
@@ -117,9 +120,9 @@ body {
     *display: inline;
 }
 #box-wrap-right{
-    background-color: #5b5b5b;
+    /*background-color: #5b5b5b;*/
     /*border: 1px solid black;*/
-    border-radius: 5px;
+    /*border-radius: 5px;*/
     display: inline-block; 
     *display: inline;
 }
@@ -149,4 +152,10 @@ body {
 #dir_box{
     color: black;
 }
-
+#file_select {
+    padding: 15px;
+    color: white;
+}
+#file_select_text {
+    color: white;
+}
