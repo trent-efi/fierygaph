@@ -5,9 +5,10 @@
 $action = $_POST['function'];
 
 switch($action) {
-    case 'init_page': $id = $_POST['id']; $oc = $_POST['oc']; $dr = $_POST['dr']; echo init_page($id, $oc, $dr);  break;
+    case 'init_page': $id = $_POST['id']; $oc = $_POST['oc']; $dr = $_POST['dr']; $size = $_POST['size']; echo init_page($id, $oc, $dr, $size);  break;
     case 'get_data_by_index': $index = $_POST['index']; echo get_data_by_index($index); break;
     case 'check_url': $url = $_POST['url']; echo check_url($url); break;
+    case 'get_data_arr' : $id = $_POST['id']; $oc = $_POST['oc']; $dr = $_POST['dr']; echo get_data_arr($id, $oc, $dr); break;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -19,7 +20,7 @@ switch($action) {
  * proceses and adds them to a 
  * container to referance later.
  *************************************/
-function init_page($id, $oc, $dr){
+function init_page($id, $oc, $dr, $size){
 
     //Example:
     //\\C3-763642I1-GAL\Process(Fiery)\Thread Count
@@ -67,7 +68,6 @@ function init_page($id, $oc, $dr){
     // Lists all of the processes reguardless of tolerance file...
     ///////////////////////////////////////////////////////////////////////////
     $first = 0;
-    $i = 0;
     $page = 0;
     foreach($list_all as $all[0]){
         if($first != 0){
@@ -76,7 +76,7 @@ function init_page($id, $oc, $dr){
                 $pos = strpos($proc, '\\');
 	        $proc = substr($proc, $pos);
                 $proc = preg_replace( '/[^[:print:]]/', '',$proc);
-                $line = "<tr class='row_select row_status' id='row".$index."' onclick='start_selected(".$index.")'><td id='name".$index."'>".$proc."</td></tr>";
+                $line = "<tr class='row_select' id='row".$index."' onclick='start_selected(".$index.")'><td id='name".$index."'>".$proc."</td></tr>";
 	        $list = $list.$line;
                 $data_arr[] = $all;
 	        $proc_arr[] = $proc;
@@ -86,6 +86,17 @@ function init_page($id, $oc, $dr){
 	    $first = 1;
 	}
     }
+
+    $extra_rows = $index % $size;
+    $extra_rows = $size - $extra_rows;
+    $i = 0;
+
+    while($i < $extra_rows){
+	$list = $list."<tr class='row_select' id='row".$index."'><td></td></tr>";
+	$index++;
+        $i++;	
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     $_SESSION['data_arr'] = $data_arr;
     $_SESSION['proc_arr'] = $proc_arr;
@@ -95,7 +106,28 @@ function init_page($id, $oc, $dr){
 }
 
 
+function get_data_arr($id, $oc, $dr){
+    $data_arr = array();
 
+    $list_all = get_all_procs($id, $oc, $dr);
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Lists all of the processes reguardless of tolerance file...
+    ///////////////////////////////////////////////////////////////////////////
+    $first = 0;
+    foreach($list_all as $all[0]){
+        
+        if($first != 0){
+	    if($all[0][1] != " ") {
+                $data_arr[] = $all;
+	    }
+	} else {
+	    $first = 1;
+	}
+    }
+    //echo "<script>console.log('in PHPH');<script>";
+    return json_encode($data_arr);
+}
 
 /**************************************
  * Parse test_FieryPerfmon.txt for

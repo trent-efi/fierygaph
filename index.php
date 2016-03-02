@@ -1,21 +1,20 @@
 <?php
 
-    session_start(); 
+session_start(); 
+include 'controller.php';
 
 
 if(!isset($_SESSION['data_arr'])) {
-        $_SESSION['data_arr'] = array();
-	$_SESSION['proc_arr'] = array();
-    }
+    $_SESSION['data_arr'] = array();
+    $_SESSION['proc_arr'] = array();
+}
 
-    include 'controller.php';
 
-    $id = $_GET["id"];
-    $oc = $_GET["oc"];
-    $dr = $_GET["dir"];
-    //$fp = $_GET['fp'];
+$id = $_GET["id"];
+$oc = $_GET["oc"];
+$dr = $_GET["dir"];
 
-    $action_id = $id.".".$oc;
+$action_id = $id.".".$oc;
  
   
 
@@ -33,13 +32,15 @@ if(!isset($_SESSION['data_arr'])) {
 	<link rel="stylesheet" href="style.css">
 	<title>FieryPerfmon Graph Portal:</title>
 	<!-- The JQuery Library used on other JQplot projects... -->
-	<!-- <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+        <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>-->
+        <script src="http://evanplaice.github.io/jquery-csv/src/jquery.csv.js"></script>
 
 	<!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
         <!-- jQuery library -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script> -->
 
         <!-- Latest compiled JavaScript -->
         <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -52,14 +53,26 @@ if(!isset($_SESSION['data_arr'])) {
         <link href="http://getbootstrap.com/assets/css/docs.min.css" rel="stylesheet">
 
     </head>
-    <body>
+    <body onunload="clear_vars()">
         <div class="header">
-            <div class="header-inner"><div><img id="logo_link" onclick="goto_calculus()" src="/fieryperfmon/efi.logo"/></div></div>       
+            <div class="header-box-left">
+	        <div>
+		    <img id="logo_link" onclick="goto_calculus()" src="/fieryperfmon/efi.logo"/>
+		</div>
+	    </div>    
+	    <div class="header-box-right">
+	        <div class="header-box-inner"><div>FieryPerfmon Calculus ID:</div></div>
+		<div class="header-box-inner"><input id="id_box" type="text" name="cal_id" placeholder="Ex: 999999.t0"></div>
+		<div class="header-box-inner"><div>Directory Name:</div></div>
+		<div class="header-box-inner"><input id="dir_box" type="text" name="dir_name" placeholder="Ex: FieryPerfmon_1"></div>
+		<div class="header-box-inner"><button id="calc_btn" onclick="ID_button_click()">Graph It!</button></div>
+		<div class="header-box-inner"><div id="error_msg">* OOPS! Something went wrong. Please try again...</div></div>
+	    </div>
         </div>
         <div class="content">
             <div class="sidebar left">
                 <div class="sidebar-inner">
-		    <div id="list1"><h2 id="list_header">Tolerance List:</h2><hr></div>
+		    <div id="list1"><h2 id="list_header">Tolerance List:<br></h2><hr></div>
 		    <div id="next-wrapper">
                         <div id="prev" onclick="prev_page()">PREV<img id="prev_next" src="/fieryperfmon/prev.png"/></div>
 		        <div id="next" onclick="next_page()"><img id="prev_next" src="/fieryperfmon/next.png"/>NEXT</div>			
@@ -74,12 +87,13 @@ if(!isset($_SESSION['data_arr'])) {
         <div class="footer">
             <div class="footer-inner">
 	        <div class="footer-box-wrapper">
-		    <div class="box-inner"><div>FieryPerfmon Calculus ID:</div></div>
-		    <div class="box-inner"><input id="id_box" type="text" name="cal_id"></div>
-		    <div class="box-inner"><div>Directory Name:</div></div>
-		    <div class="box-inner"><input id="dir_box" type="text" name="dir_name"></div>
-		    <div class="box-inner"><button onclick="ID_button_click()">Graph It!</button></div>
-		    <div class="box-inner"><div id="error_msg">* OOPS! Something went wrong. Please try again...<div></div>
+		    <div id="box-wrap-left">
+		    </div>
+		    <div id="box-wrap-right">
+		        <div class="box-inner">Choose a CSV to upload:</div>
+			<div class="box-inner"><input type="file" id="files" name="files[]" multiple /></div>
+                        <!--<div class="box-inner"><button onclick="CSV_button_click()">Import CSV</button></div>-->
+		    </div>
 		</div>
 	    </div>
         </div>
@@ -88,71 +102,170 @@ if(!isset($_SESSION['data_arr'])) {
 
     MAX_PAGE = 0;
     CUR_PAGE = 0;
-    ROW_SIZE = 30;
+    ROW_SIZE = 10;
 
     DATA_ARR = new Array();
-    PROC_ARR = new Array();
 
-    $(document).ready(function(){
-
-        //console.log(window.location.hostname); 
+    $(window).load(function() {
 
         var id = <?php echo $id; ?>; //Calculus ID
 	var oc = <?php echo $oc; ?>; //Occurrence number of the test
         var dr = <?php echo $dr; ?>; //Directory of the files
         
-	init_page (id, oc, dr);
+	init_page (id, oc, dr);	
+
 	var header = " " + id + "." + oc + "/" + dr;
-	$("#list_header").append(header);	
+	$("#list_header").append(header);
+
+	if(isAPIAvailable()) {
+            $('#files').bind('change', handleFileSelect);
+        }
     });
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    function isAPIAvailable() {
+        // Check for the various File API support.
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            // Great success! All the File APIs are supported.
+            return true;
+        } else {
+            // source: File API availability - http://caniuse.com/#feat=fileapi
+            // source: <output> availability - http://html5doctor.com/the-output-element/
+            document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+            // 6.0 File API & 13.0 <output>
+            document.writeln(' - Google Chrome: 13.0 or later<br />');
+            // 3.6 File API & 6.0 <output>
+            document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+            // 10.0 File API & 10.0 <output>
+            document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+            // ? File API & 5.1 <output>
+            document.writeln(' - Safari: Not supported<br />');
+            // ? File API & 9.2 <output>
+            document.writeln(' - Opera: Not supported');
+            return false;
+        }
+    }
+
+    function handleFileSelect(evt) {
+
+        DATA_ARR = [];
+        var files = evt.target.files; // FileList object
+        var file = files[0];
+
+        // read the file metadata
+        var output = ''
+            output += '<span style="font-weight:bold;">' + escape(file.name) + '</span><br />\n';
+            output += ' - FileType: ' + (file.type || 'n/a') + '<br />\n';
+            output += ' - FileSize: ' + file.size + ' bytes<br />\n';
+            output += ' - LastModified: ' + (file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() : 'n/a') + '<br />\n';
+
+        // read the file contents
+        printTable(file);
+        
+        // post the results
+        //$('#list').append(output);
+    }
+
+    function printTable(file) {
+        
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function(event) {
+            var csv = event.target.result;
+	    
+            var data = $.csv.toArrays(csv);
+            var arr = []; 
+            var html = '<h2 id="list_header">Tolerance List:<br>'+file.name+'</h2><hr>\r\n';
+	    html += '<table>\r\n';
+	    var index = 0;
+	    var str = "";
+	    var first = 0;
+            for(var row in data) {
+	        if(first == 1) {
+
+		    if(data[row][1] != " ") {
+                        str = data[row][0].substring(2);
+		        var n = str.indexOf("\\");
+		        str = str.substring(n);
+                        html += '<tr class="row_select" id="row' + index +'" onclick="start_selected('+index+')"><td id="name'+ index +'">'+str+'</td></tr>\r\n';
+			arr[index] = [data[row]];
+
+		        index++;
+		    }
+		} else {
+		    first = 1;
+		}
+            }
+	    html += '</table>';
+	    
+	    DATA_ARR = arr;
+            $('#list1').html(html);
+
+	    handle_row_display(0);
+            //click the first row...
+	    $("#row0").click(); 
+        };
+        reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+    }
+    ///////////////////////////////////////////////////////////////////////////
+
+    function clear_vars(){
+        DATA_ARR = [];
+    }
+
     function init_page (id, oc, dr) {
-        console.log(id);
         $.ajax({
             url: 'controller.php',
             method: 'POST',
-	    data:  {'function': 'init_page', 'id': id, 'oc': oc, 'dr': dr},
+	    data:  {'function': 'get_data_arr', 'id': id, 'oc': oc, 'dr': dr},
 	    success: function(str){
-	        $("#list1").append(str);
-		//This will 'CLICK' the newly generated table row from the return str
-                //This 'CLICK' will call start_selected() in javascript
+	        
+                var arr = JSON.parse(str);
+	        DATA_ARR = arr;
 
-                DATA_ARR = <?php echo json_encode($_SESSION['data_arr']); ?>;
-                PROC_ARR = <?php echo json_encode($_SESSION['proc_arr']); ?>;
-		//console.log(DATA_ARR[1][0]);
+		$.ajax({
+                    url: 'controller.php',
+                    method: 'POST',
+	            data:  {'function': 'init_page', 'id': id, 'oc': oc, 'dr': dr, 'size' : ROW_SIZE},
+	            success: function(str){
+	                $("#list1").append(str);               
 
+                        var length = DATA_ARR.length;
+			MAX_PAGE = Math.floor(length / ROW_SIZE);
 
-                var length = PROC_ARR.length;
-		MAX_PAGE = Math.floor(length / ROW_SIZE);
-		if(MAX_PAGE <= 0) {
-		    MAX_PAGE = 1;
-		}
+		        if(MAX_PAGE <= 0) {
+		            MAX_PAGE = 1;
+		        }
 		
-                handle_row_display(0);
-                //click the first row...
-		$("#row0").click(); 
-	    }   
+                        handle_row_display(0);
+                        //click the first row...
+		        $("#row0").click(); 
+	            }   
+                });
+	    }
         });
     }
 
     function prev_page(){
         CUR_PAGE--;
 	handle_row_display(CUR_PAGE);
-        //alert("PREV");
     }
 
     function next_page(){
         CUR_PAGE++;
 	handle_row_display(CUR_PAGE);
-        //alert("CURR: "+CUR_PAGE+" MAX: " + MAX_PAGE);
     }
 
 
 
     function handle_row_display(page_num){
-   
+  
+        //alert(page_num);
         //hide and collapse the list and buttons...
-        $(".row_status").css({"visibility":"collapse"});
+        //$(".row_select").css({"visibility":"collapse"});
+        $(".row_select").css({"display":"none"});
+
         $("#prev").css({"visibility":"hidden"});
         $("#next").css({"visibility":"hidden"});
 
@@ -172,14 +285,17 @@ if(!isset($_SESSION['data_arr'])) {
 	var end = start + ROW_SIZE;
 	for(var i = start; i < end; i++){
             row_id = "#row"+i;
-	    $(row_id).css({"visibility":"visible"});
+	    
+	    //$(row_id).css({"visibility":"visible"});
+	    $(row_id).css({"display":"inherit"});
+	    
         }
 
     }
 
+
     function session_destroy(){
         <?php session_destroy();?>
-	console.log("page unload");
     }
 
     function CSV_button_click(){
@@ -229,9 +345,9 @@ if(!isset($_SESSION['data_arr'])) {
 
 
 
-    function start_selected(index) {
-        row_selected(index);
+    function start_selected(index) {	
         get_data_by_index(index);	
+        row_selected(index);
     }
 
 
@@ -239,29 +355,18 @@ if(!isset($_SESSION['data_arr'])) {
         id_tag = "#row"+index;
 
 	//RESET the selected row colors and highlight the new one...
-	$(".row_select").css({"background-color":"white", "color":"#3572b0"});
+	$(".row_select").css({"background-color":"white", "color":"#3572b0"});	
         $(id_tag).css({"background-color":"#3572b0", "color":"white"});
+
     }
 
     function get_data_by_index(index){
-    
-        //console.log(DATA_ARR[index][0].toString());
-        update_chart(DATA_ARR[index][0], index);
-
-        /*$.ajax({
-            url: 'controller.php',
-            method: 'POST',
-	    data:  {'function': 'get_data_by_index', 'index': index},
-	    success: function(data){
-		update_chart(data, index);
-	    }   
-        });*/
-
-    
+        index = parseInt(index);
+        update_chart( DATA_ARR[index][0], index );
     }
 
     function update_chart(data, index){
-        //console.log(parseInt(data[1]));
+
         var name = "#name"+index;
 	var proc_name = "<h2>"+$(name).html()+"</h2>"; 
 

@@ -77,23 +77,27 @@ body {
     color: #CC0000;
     visibility: hidden;
 }
-.row_status {
-    visibility: collapse;
+.row_select {
+    display: none;
+    /*visibility: collapse;*/
 }
 #next-wrapper{
     position: relative;
 }
 #next {
-    visibility: hidden;
     display: inline-block; 
     *display: inline;
+    cursor: pointer; 
+    cursor: hand;    
 }
 #prev {
-    visibility: hidden;
     display: inline-block; 
     *display: inline;
+    cursor: pointer; 
+    cursor: hand;    
 }
 #logo_link {
+    padding: 5px;
     cursor: pointer; 
     cursor: hand;
 }
@@ -104,3 +108,45 @@ body {
 #prev_next {
     width: 20px;
 }
+#box-wrap-left{
+    color: black;
+    background-color: #5b5b5b;
+    /*border: 1px solid black;*/
+    border-radius: 5px;
+    display: inline-block; 
+    *display: inline;
+}
+#box-wrap-right{
+    background-color: #5b5b5b;
+    /*border: 1px solid black;*/
+    border-radius: 5px;
+    display: inline-block; 
+    *display: inline;
+}
+.header-box-left{
+    display: inline-block; 
+    *display: inline;
+}
+.header-box-right{
+    float: right;
+    padding: 15px;
+    position: relative;
+    display: inline-block; 
+    *display: inline;
+    color: white;
+}
+.header-box-inner{
+     color: white;
+    display: inline-block; 
+    *display: inline;
+}
+#calc_btn{
+    color: black;
+}
+#id_box {
+    color: black;
+}
+#dir_box{
+    color: black;
+}
+
