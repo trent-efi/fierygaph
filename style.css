@@ -85,6 +85,7 @@ body {
     /*visibility: collapse;*/
 }
 #next-wrapper{
+    /*border: 1px solid black;*/
     position: relative;
 }
 #next {
@@ -158,4 +159,8 @@ body {
 }
 #file_select_text {
     color: white;
+}
+#list1 {
+    /*border: 1px solid black;*/
+    height: 70%;
 }

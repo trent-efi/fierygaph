@@ -75,8 +75,10 @@ $action_id = $id.".".$oc;
                 <div class="sidebar-inner">
 		    <div id="list1"><h2 id="list_header">Tolerance List:<br></h2><hr></div>
 		    <div id="next-wrapper">
+		        <hr>
                         <div id="prev" onclick="prev_page()">PREV<img id="prev_next" src="/fieryperfmon/prev.png"/></div>
 		        <div id="next" onclick="next_page()"><img id="prev_next" src="/fieryperfmon/next.png"/>NEXT</div>			
+			<hr>
 		    </div>
 
 		</div>
