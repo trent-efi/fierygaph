@@ -9,13 +9,20 @@ if(!isset($_SESSION['data_arr'])) {
     $_SESSION['proc_arr'] = array();
 }
 
+$id = "NULL";
+$oc = "NULL";
+$dr = "NULL";
 
-$id = $_GET["id"];
-$oc = $_GET["oc"];
-$dr = $_GET["dir"];
+$action_id = "NULL";
 
-$action_id = $id.".".$oc;
- 
+if($_GET['id'] && $_GET['oc'] && $_GET['dir'] ){
+
+    $id = $_GET["id"];
+    $oc = $_GET["oc"];
+    $dr = $_GET["dir"];
+
+    $action_id = $id.".".$oc;
+} 
   
 
     /*if (empty($id)){
